@@ -1,0 +1,7 @@
+20150813
+
+Q. Fail to deploy executable jar with dependencies, which result in ClassNotFoundException caused by lack of external library mysql-connector-java-5.1.36
+
+A. http://stackoverflow.com/questions/574594/how-can-i-create-an-executable-jar-with-dependencies-using-maven
+
+Add <build> configuration to pon.xml. 

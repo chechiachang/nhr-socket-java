@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="DB_URL">jdbc:mysql://localhost:3306/nhr</entry>
+<entry key="DRIVER_MANAGER">com.mysql.jdbc.Driver</entry>
+<entry key="USER">nhr</entry>
+<entry key="PASS">25ac7375c1fd64eca8dd8cf309071c0d</entry>
+</properties>
