@@ -3,16 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+package com.ccc.nhr;
 
-/**
- *
- * @author davidchang
- */
-import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.net.*;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -21,49 +15,38 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 
-public class PortDataInput {
-
-    /**
-     * JavaProgrammingForums.com
-     *
-     * @param args
-     * @throws java.lang.Exception
-     */
-    public static void main(String[] args) throws Exception {
-
-        //Port to monitor
-        final int myPort = 10010;
-        //wheather to print out
-
-        ServerSocket ssock = new ServerSocket(myPort);
-
-        System.out.println(
-                "port " + myPort + " opened");
-
-        Socket sock = ssock.accept();
-
-        System.out.println(
-                "Someone has made socket connection");
-
-        OneConnection client = new OneConnection(sock);
-        String s = client.getScannerRequest();
-
-    }
-
-}
-
 /**
  *
  * @author davidchang
  */
-class OneConnection {
+public class NhrDataParser {
+
+    DataInputStream dataInputStream;
+
+    public NhrDataParser(DataInputStream dataInputStream) {
+        this.dataInputStream = dataInputStream;
+    }
+
+    public static String toHex(byte b) {
+        return ("" + "0123456789ABCDEF".charAt(0xf & b >> 4) + "0123456789ABCDEF".charAt(b & 0xf));
+    }
+
+    public void getRequest() throws IOException {
+        String str = null;
+        System.out.print(new Date() + " -> ");
+        while ((str = Integer.toHexString(dataInputStream.read())) != null) {
+            if ("41".equals(str)) {
+                System.out.println();
+                System.out.print(new Date() + " -> ");
+            }
+            if (str.length() == 1) {
+                str = "0" + str;
+            }
+            System.out.print(str + " ");
+        }
+    }
 
     boolean isPrintout = false;
-
-    Socket sock;
-    BufferedReader in = null;
-    DataOutputStream out = null;
-    DataInputStream datain = null;
 
     String s = null;
     String[] scanner = {"0", "0", "0", "0"};
@@ -80,46 +63,7 @@ class OneConnection {
     PreparedStatement pstmt = null;
     ResultSet rs;
 
-    OneConnection(Socket sock) throws Exception {
-        this.sock = sock;
-        in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-        datain = new DataInputStream(sock.getInputStream());
-
-        out = new DataOutputStream(sock.getOutputStream());
-    }
-
-    String getRequest() throws Exception {
-        String s = null;
-        System.out.print(new Date() + " -> ");
-
-        while ((s = Integer.toHexString(datain.read())) != null) {
-            if ("41".equals(s)) {
-                System.out.println();
-                System.out.print(new Date() + " -> ");
-            }
-            if (s.length() == 1) {
-                s = "0" + s;
-            }
-            System.out.print(s + " ");
-        }
-        return s;
-    }
-
-    String getFullyRequest() throws Exception {
-        String s = null;
-        System.out.print(new Date() + " -> ");
-        byte[] buffer = new byte[40];
-
-        while (true) {
-            datain.readFully(buffer);
-            for (byte b : buffer) {
-                System.out.print(Integer.toHexString(b) + " ");
-            }
-            System.out.println();
-        }
-    }
-
-    String getScannerRequest() throws Exception {
+    void getScannerRequest() throws IOException, SQLException, ClassNotFoundException {
         System.out.print(new Date() + " -> ");
         int dataLength = 10;   //any number larger than 5 
         int count = 0;
@@ -129,7 +73,7 @@ class OneConnection {
             Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
 
-            while ((s = Integer.toHexString(datain.read())) != null) {
+            while ((s = Integer.toHexString(dataInputStream.read())) != null) {
                 //
                 if (end == true) {
                     System.out.println();
@@ -334,8 +278,6 @@ class OneConnection {
                 se.printStackTrace();
             }//end finally try
         }
-        return s;
-
     }
 
     String returnOutput(int startIndex, int endIndex) {
@@ -345,4 +287,5 @@ class OneConnection {
         }
         return text;
     }
+
 }

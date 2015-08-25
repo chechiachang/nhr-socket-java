@@ -3,16 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+package com.ccc.nhr;
 
-/**
- *
- * @author davidchang
- */
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.*;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -21,49 +21,49 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 
-public class PortDataInput {
-
-    /**
-     * JavaProgrammingForums.com
-     *
-     * @param args
-     * @throws java.lang.Exception
-     */
-    public static void main(String[] args) throws Exception {
-
-        //Port to monitor
-        final int myPort = 10010;
-        //wheather to print out
-
-        ServerSocket ssock = new ServerSocket(myPort);
-
-        System.out.println(
-                "port " + myPort + " opened");
-
-        Socket sock = ssock.accept();
-
-        System.out.println(
-                "Someone has made socket connection");
-
-        OneConnection client = new OneConnection(sock);
-        String s = client.getScannerRequest();
-
-    }
-
-}
-
 /**
  *
  * @author davidchang
  */
-class OneConnection {
+public class NhrConnection {
+
+    private final Socket socket;
+    private final BufferedReader inputBufferedReader;
+    private final DataOutputStream dataOutputStream;
+    private final DataInputStream dataInputStream;
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public BufferedReader getInputBufferedReader() {
+        return inputBufferedReader;
+    }
+
+    public DataOutputStream getDataOutputStream() {
+        return dataOutputStream;
+    }
+
+    public DataInputStream getDataInputStream() {
+        return dataInputStream;
+    }
+
+    public void getRequest() throws IOException {
+        String str = null;
+        System.out.print(new Date() + " -> ");
+        while ((str = Integer.toHexString(dataInputStream.read())) != null) {
+            if ("41".equals(str)) {
+                System.out.println();
+                System.out.print(new Date() + " -> ");
+            }
+            if (str.length() == 1) {
+                str = "0" + str;
+            }
+            System.out.print(str + " ");
+        }
+    }
 
     boolean isPrintout = false;
-
-    Socket sock;
-    BufferedReader in = null;
-    DataOutputStream out = null;
-    DataInputStream datain = null;
 
     String s = null;
     String[] scanner = {"0", "0", "0", "0"};
@@ -80,47 +80,10 @@ class OneConnection {
     PreparedStatement pstmt = null;
     ResultSet rs;
 
-    OneConnection(Socket sock) throws Exception {
-        this.sock = sock;
-        in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-        datain = new DataInputStream(sock.getInputStream());
-
-        out = new DataOutputStream(sock.getOutputStream());
-    }
-
-    String getRequest() throws Exception {
-        String s = null;
-        System.out.print(new Date() + " -> ");
-
-        while ((s = Integer.toHexString(datain.read())) != null) {
-            if ("41".equals(s)) {
-                System.out.println();
-                System.out.print(new Date() + " -> ");
-            }
-            if (s.length() == 1) {
-                s = "0" + s;
-            }
-            System.out.print(s + " ");
+    public void getScannerRequest() throws IOException, SQLException, ClassNotFoundException {
+        if (isPrintout) {
+            System.out.print(new Date() + " -> ");
         }
-        return s;
-    }
-
-    String getFullyRequest() throws Exception {
-        String s = null;
-        System.out.print(new Date() + " -> ");
-        byte[] buffer = new byte[40];
-
-        while (true) {
-            datain.readFully(buffer);
-            for (byte b : buffer) {
-                System.out.print(Integer.toHexString(b) + " ");
-            }
-            System.out.println();
-        }
-    }
-
-    String getScannerRequest() throws Exception {
-        System.out.print(new Date() + " -> ");
         int dataLength = 10;   //any number larger than 5 
         int count = 0;
         boolean end = false;
@@ -129,9 +92,9 @@ class OneConnection {
             Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
 
-            while ((s = Integer.toHexString(datain.read())) != null) {
+            while ((s = Integer.toHexString(dataInputStream.read())) != null) {
                 //
-                if (end == true) {
+                if (isPrintout && end == true) {
                     System.out.println();
                     System.out.print(new Date() + " -> ");
                 }
@@ -334,8 +297,6 @@ class OneConnection {
                 se.printStackTrace();
             }//end finally try
         }
-        return s;
-
     }
 
     String returnOutput(int startIndex, int endIndex) {
@@ -344,5 +305,71 @@ class OneConnection {
             text = text + output[i];
         }
         return text;
+    }
+
+    public void sendCommand() throws IOException {
+        //PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+        //Device IEEE Address Reporting Command  AT page.24
+        //String[] cmd = {"41", "54", "2b", "09", "08", "53", "46", "d0", "d1", "c"};
+        //Byte[] cmdBytes = new Byte[10];
+        //String cmd = "0x41 0x54 0x2b 0x09 0x08 0x53 0x46 0xd0 0xd1 0x0c";
+        //printWriter.print(cmd);
+        
+        String in = "41542b09085345d0d10c";
+        byte[] cmd = hexStringToByteArray(in);
+        OutputStream socketOutputStream = socket.getOutputStream();
+        socketOutputStream.write(cmd);
+        socketOutputStream.flush();
+        System.out.println("Clinet cmd : " + in);
+        
+    }
+
+    public byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
+    }
+
+    public static class NhrConnectionBuilder {
+
+        private final Socket socket;
+        private BufferedReader inputBufferedReader;
+        private DataOutputStream dataOutputStream;
+        private DataInputStream dataInputStream;
+
+        public NhrConnectionBuilder(Socket socket) {
+            this.socket = socket;
+        }
+
+        public NhrConnectionBuilder withInputBufferedReader(BufferedReader inputBufferedReader) {
+            this.inputBufferedReader = inputBufferedReader;
+            return this;
+        }
+
+        public NhrConnectionBuilder withDataOutputStream(DataOutputStream dataOutputStream) {
+            this.dataOutputStream = dataOutputStream;
+            return this;
+        }
+
+        public NhrConnectionBuilder withDataInputStream(DataInputStream dataInputStream) {
+            this.dataInputStream = dataInputStream;
+            return this;
+        }
+
+        public NhrConnection build() {
+            return new NhrConnection(this);
+        }
+
+    }
+
+    private NhrConnection(NhrConnectionBuilder builder) {
+        this.socket = builder.socket;
+        this.inputBufferedReader = builder.inputBufferedReader;
+        this.dataOutputStream = builder.dataOutputStream;
+        this.dataInputStream = builder.dataInputStream;
     }
 }
