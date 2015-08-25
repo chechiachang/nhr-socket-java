@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -308,20 +309,49 @@ public class NhrConnection {
     }
 
     public void sendCommand() throws IOException {
-        //PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-        //Device IEEE Address Reporting Command  AT page.24
-        //String[] cmd = {"41", "54", "2b", "09", "08", "53", "46", "d0", "d1", "c"};
-        //Byte[] cmdBytes = new Byte[10];
-        //String cmd = "0x41 0x54 0x2b 0x09 0x08 0x53 0x46 0xd0 0xd1 0x0c";
-        //printWriter.print(cmd);
+        /*
+         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+         Device IEEE Address Reporting Command  AT page.24
+         String[] cmd = {"41", "54", "2b", "09", "08", "53", "46", "d0", "d1", "c"};
+         Byte[] cmdBytes = new Byte[10];
+         String cmd = "0x41 0x54 0x2b 0x09 0x08 0x53 0x46 0xd0 0xd1 0x0c";
+         printWriter.print(cmd);
+                
+         byte[] cmd = hexStringToByteArray(in);
+
+         
+         String in = "41542b09085345d0d10c";
+         byte[] cmd = new byte[10];
+         cmd[0] = (byte) 0x41;
+         cmd[1] = (byte) 0x42;
+         cmd[2] = (byte) 0x2b;
+         cmd[3] = (byte) 0x09;
+         cmd[4] = (byte) 0x08;
+         cmd[5] = (byte) 0x53;
+         cmd[6] = (byte) 0x45;
+         cmd[7] = (byte) 0xd0;
+         cmd[8] = (byte) 0xd1;
+         cmd[9] = (byte) 0x0c;
+         */
         
-        String in = "41542b09085345d0d10c";
-        byte[] cmd = hexStringToByteArray(in);
+        String in = "41 54 2b 09 08 53 45 d0 d1 0c";
+        byte[] cmd = {
+            (byte) 0x41,
+            (byte) 0x42,
+            (byte) 0x2b,
+            (byte) 0x09,
+            (byte) 0x08,
+            (byte) 0x53,
+            (byte) 0x45,
+            (byte) 0xd0,
+            (byte) 0xd1,
+            (byte) 0x0c
+        };
         OutputStream socketOutputStream = socket.getOutputStream();
         socketOutputStream.write(cmd);
         socketOutputStream.flush();
         System.out.println("Clinet cmd : " + in);
-        
+
     }
 
     public byte[] hexStringToByteArray(String s) {

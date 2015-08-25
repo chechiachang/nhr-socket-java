@@ -26,7 +26,7 @@ public class TestByte {
          System.out.println(out);
          }
          */
-        System.out.println(Arrays.toString(cmd));
+        System.out.println(toByteArray("41"));
 
     }
 
@@ -46,5 +46,6 @@ public class TestByte {
 
     public static byte[] toByteArray(String s) {
         return DatatypeConverter.parseHexBinary(s);
+        
     }
 }
