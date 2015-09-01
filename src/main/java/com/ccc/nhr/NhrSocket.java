@@ -63,17 +63,24 @@ class SenderThread extends Thread {
 
     @Override
     public void run() {
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    nhrConnection.sendCommand();
-                } catch (Exception e) {
+        /*
+         Timer timer = new Timer();
+         timer.scheduleAtFixedRate(new TimerTask() {
+         @Override
+         public void run() {
+         try {
+         nhrConnection.sendCommand();
+         } catch (Exception e) {
 
-                }
-            }
-        }, 2 * 1000, 2 * 1000);
+         }
+         }
+         }, 2 * 1000, 2 * 1000);
+         */
+        try {
+            nhrConnection.sendCommand();
+        } catch (Exception e) {
+
+        }
     }
 }
 

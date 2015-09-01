@@ -21,6 +21,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Scanner;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  *
@@ -332,26 +334,51 @@ public class NhrConnection {
          cmd[7] = (byte) 0xd0;
          cmd[8] = (byte) 0xd1;
          cmd[9] = (byte) 0x0c;
-         */
         
-        String in = "41 54 2b 09 08 53 45 d0 d1 0c";
-        byte[] cmd = {
-            (byte) 0x41,
-            (byte) 0x42,
-            (byte) 0x2b,
-            (byte) 0x09,
-            (byte) 0x08,
-            (byte) 0x53,
-            (byte) 0x45,
-            (byte) 0xd0,
-            (byte) 0xd1,
-            (byte) 0x0c
-        };
-        OutputStream socketOutputStream = socket.getOutputStream();
-        socketOutputStream.write(cmd);
-        socketOutputStream.flush();
-        System.out.println("Clinet cmd : " + in);
 
+         byte[] cmd = {
+         (byte) 0x41,
+         (byte) 0x42,
+         (byte) 0x2b,
+         (byte) 0x09,
+         (byte) 0x08,
+         (byte) 0x53,
+         (byte) 0x45,
+         (byte) 0xd0,
+         (byte) 0xd1,
+         (byte) 0x0c
+         };
+         */
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            String request = scanner.next();
+            String temp;
+            byte[] cmd;
+            switch (request) {
+                case "sirenon":
+                    temp = "41 54 2B 18  12  00 12 4b 00 05 a7 bb b8  d0 b5 02 02 05 02 01 04 00 00 10 00 03 f1";
+                    cmd = hexStringToByteArray(temp.replace(" ", ""));
+                    break;
+                case "coordinator":
+                    temp = "41542b07 08 5241f0";
+                    cmd = hexStringToByteArray(temp.replace(" ", ""));
+                    break;
+                case "query":
+                    temp = "41542b07 08 4446a6";
+                    cmd = hexStringToByteArray(temp.replace(" ",""));
+                    break;
+                default:
+                    cmd = hexStringToByteArray("");
+                    break;
+            }
+
+            OutputStream socketOutputStream = socket.getOutputStream();
+            socketOutputStream.write(cmd);
+            socketOutputStream.flush();
+
+            System.out.print("Client cmd : " + DatatypeConverter.printHexBinary(cmd));
+            System.out.println();
+        }
     }
 
     public byte[] hexStringToByteArray(String s) {
