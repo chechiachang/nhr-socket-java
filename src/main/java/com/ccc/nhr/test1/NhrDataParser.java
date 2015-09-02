@@ -3,17 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.ccc.nhr;
+package com.ccc.nhr.test1;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -21,34 +14,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Scanner;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  *
  * @author davidchang
  */
-public class NhrConnection {
+public class NhrDataParser {
 
-    private final Socket socket;
-    private final BufferedReader inputBufferedReader;
-    private final DataOutputStream dataOutputStream;
-    private final DataInputStream dataInputStream;
+    DataInputStream dataInputStream;
 
-    public Socket getSocket() {
-        return socket;
+    public NhrDataParser(DataInputStream dataInputStream) {
+        this.dataInputStream = dataInputStream;
     }
 
-    public BufferedReader getInputBufferedReader() {
-        return inputBufferedReader;
-    }
-
-    public DataOutputStream getDataOutputStream() {
-        return dataOutputStream;
-    }
-
-    public DataInputStream getDataInputStream() {
-        return dataInputStream;
+    public static String toHex(byte b) {
+        return ("" + "0123456789ABCDEF".charAt(0xf & b >> 4) + "0123456789ABCDEF".charAt(b & 0xf));
     }
 
     public void getRequest() throws IOException {
@@ -83,10 +63,8 @@ public class NhrConnection {
     PreparedStatement pstmt = null;
     ResultSet rs;
 
-    public void getScannerRequest() throws IOException, SQLException, ClassNotFoundException {
-        if (isPrintout) {
-            System.out.print(new Date() + " -> ");
-        }
+    void getScannerRequest() throws IOException, SQLException, ClassNotFoundException {
+        System.out.print(new Date() + " -> ");
         int dataLength = 10;   //any number larger than 5 
         int count = 0;
         boolean end = false;
@@ -97,7 +75,7 @@ public class NhrConnection {
 
             while ((s = Integer.toHexString(dataInputStream.read())) != null) {
                 //
-                if (isPrintout && end == true) {
+                if (end == true) {
                     System.out.println();
                     System.out.print(new Date() + " -> ");
                 }
@@ -310,123 +288,4 @@ public class NhrConnection {
         return text;
     }
 
-    public void sendCommand() throws IOException {
-        /*
-         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-         Device IEEE Address Reporting Command  AT page.24
-         String[] cmd = {"41", "54", "2b", "09", "08", "53", "46", "d0", "d1", "c"};
-         Byte[] cmdBytes = new Byte[10];
-         String cmd = "0x41 0x54 0x2b 0x09 0x08 0x53 0x46 0xd0 0xd1 0x0c";
-         printWriter.print(cmd);
-                
-         byte[] cmd = hexStringToByteArray(in);
-
-         
-         String in = "41542b09085345d0d10c";
-         byte[] cmd = new byte[10];
-         cmd[0] = (byte) 0x41;
-         cmd[1] = (byte) 0x42;
-         cmd[2] = (byte) 0x2b;
-         cmd[3] = (byte) 0x09;
-         cmd[4] = (byte) 0x08;
-         cmd[5] = (byte) 0x53;
-         cmd[6] = (byte) 0x45;
-         cmd[7] = (byte) 0xd0;
-         cmd[8] = (byte) 0xd1;
-         cmd[9] = (byte) 0x0c;
-        
-
-         byte[] cmd = {
-         (byte) 0x41,
-         (byte) 0x42,
-         (byte) 0x2b,
-         (byte) 0x09,
-         (byte) 0x08,
-         (byte) 0x53,
-         (byte) 0x45,
-         (byte) 0xd0,
-         (byte) 0xd1,
-         (byte) 0x0c
-         };
-         */
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            String request = scanner.next();
-            String temp;
-            byte[] cmd;
-            switch (request) {
-                case "sirenon":
-                    temp = "41 54 2B 18  12  00 12 4b 00 05 a7 bb b8  d0 b5 02 02 05 02 01 04 00 00 10 00 03 f1";
-                    cmd = hexStringToByteArray(temp.replace(" ", ""));
-                    break;
-                case "coordinator":
-                    temp = "41542b07 08 5241f0";
-                    cmd = hexStringToByteArray(temp.replace(" ", ""));
-                    break;
-                case "query":
-                    temp = "41542b07 08 4446a6";
-                    cmd = hexStringToByteArray(temp.replace(" ",""));
-                    break;
-                default:
-                    cmd = hexStringToByteArray("");
-                    break;
-            }
-
-            OutputStream socketOutputStream = socket.getOutputStream();
-            socketOutputStream.write(cmd);
-            socketOutputStream.flush();
-
-            System.out.print("Client cmd : " + DatatypeConverter.printHexBinary(cmd));
-            System.out.println();
-        }
-    }
-
-    public byte[] hexStringToByteArray(String s) {
-        int len = s.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i + 1), 16));
-        }
-        return data;
-    }
-
-    public static class NhrConnectionBuilder {
-
-        private final Socket socket;
-        private BufferedReader inputBufferedReader;
-        private DataOutputStream dataOutputStream;
-        private DataInputStream dataInputStream;
-
-        public NhrConnectionBuilder(Socket socket) {
-            this.socket = socket;
-        }
-
-        public NhrConnectionBuilder withInputBufferedReader(BufferedReader inputBufferedReader) {
-            this.inputBufferedReader = inputBufferedReader;
-            return this;
-        }
-
-        public NhrConnectionBuilder withDataOutputStream(DataOutputStream dataOutputStream) {
-            this.dataOutputStream = dataOutputStream;
-            return this;
-        }
-
-        public NhrConnectionBuilder withDataInputStream(DataInputStream dataInputStream) {
-            this.dataInputStream = dataInputStream;
-            return this;
-        }
-
-        public NhrConnection build() {
-            return new NhrConnection(this);
-        }
-
-    }
-
-    private NhrConnection(NhrConnectionBuilder builder) {
-        this.socket = builder.socket;
-        this.inputBufferedReader = builder.inputBufferedReader;
-        this.dataOutputStream = builder.dataOutputStream;
-        this.dataInputStream = builder.dataInputStream;
-    }
 }

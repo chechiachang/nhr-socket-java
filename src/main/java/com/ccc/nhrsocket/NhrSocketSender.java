@@ -5,7 +5,7 @@
  */
 package com.ccc.nhrsocket;
 
-import com.ccc.nhr.NhrConnection;
+import com.ccc.nhr.test1.NhrConnection;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
