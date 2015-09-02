@@ -5,7 +5,7 @@
  */
 package com.ccc.nhr.test1;
 
-import com.ccc.nhr.test1.NhrConnection.NhrConnectionBuilder;
+import com.ccc.nhr.test1.NhrDataService.NhrConnectionBuilder;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -36,7 +36,7 @@ public class NhrSocket {
         System.out.println("Creating socket to '" + host + "' on port " + portNumber);
         Socket socket = new Socket(host, portNumber);
 
-        final NhrConnection nhrConnection = new NhrConnectionBuilder(socket)
+        final NhrDataService nhrConnection = new NhrConnectionBuilder(socket)
                 .withInputBufferedReader(new BufferedReader(new InputStreamReader(socket.getInputStream())))
                 .withDataInputStream(new DataInputStream(socket.getInputStream()))
                 .withDataOutputStream(new DataOutputStream(socket.getOutputStream()))
@@ -55,9 +55,9 @@ public class NhrSocket {
 
 class SenderThread extends Thread {
 
-    NhrConnection nhrConnection;
+    NhrDataService nhrConnection;
 
-    public void setNhrConnection(NhrConnection nhrConnection) {
+    public void setNhrConnection(NhrDataService nhrConnection) {
         this.nhrConnection = nhrConnection;
     }
 
@@ -86,9 +86,9 @@ class SenderThread extends Thread {
 
 class ReceiverThread extends Thread {
 
-    NhrConnection nhrConnection;
+    NhrDataService nhrConnection;
 
-    public void setNhrConnection(NhrConnection nhrConnection) {
+    public void setNhrConnection(NhrDataService nhrConnection) {
         this.nhrConnection = nhrConnection;
     }
 
@@ -97,7 +97,7 @@ class ReceiverThread extends Thread {
         try {
             nhrConnection.getScannerRequest();
             //nhrConnection.getRequest();
-        } catch (Exception e) {
+        } catch (IOException | SQLException | ClassNotFoundException e) {
 
         }
     }

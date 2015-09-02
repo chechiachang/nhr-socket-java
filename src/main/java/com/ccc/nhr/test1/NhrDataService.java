@@ -28,12 +28,29 @@ import javax.xml.bind.DatatypeConverter;
  *
  * @author davidchang
  */
-public class NhrConnection {
+public class NhrDataService {
 
     private final Socket socket;
     private final BufferedReader inputBufferedReader;
     private final DataOutputStream dataOutputStream;
     private final DataInputStream dataInputStream;
+
+    boolean isPrintout = false;
+
+    String s = null;
+    String[] scanner = {"0", "0", "0", "0"};
+    String[] output = new String[33];
+
+    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+    static final String DB_URL = "jdbc:mysql://localhost:3306/nhr?connectTimeout=3000";
+    //  Database credentials
+    static final String USER = "nhr";
+    static final String PASS = "25ac7375c1fd64eca8dd8cf309071c0d";
+    private static final long serialVersionUID = 1L;
+
+    Connection conn = null;
+    PreparedStatement pstmt = null;
+    ResultSet rs;
 
     public Socket getSocket() {
         return socket;
@@ -65,23 +82,6 @@ public class NhrConnection {
             System.out.print(str + " ");
         }
     }
-
-    boolean isPrintout = false;
-
-    String s = null;
-    String[] scanner = {"0", "0", "0", "0"};
-    String[] output = new String[33];
-
-    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-    static final String DB_URL = "jdbc:mysql://localhost:3306/nhr?connectTimeout=3000";
-    //  Database credentials
-    static final String USER = "nhr";
-    static final String PASS = "25ac7375c1fd64eca8dd8cf309071c0d";
-    private static final long serialVersionUID = 1L;
-
-    Connection conn = null;
-    PreparedStatement pstmt = null;
-    ResultSet rs;
 
     public void getScannerRequest() throws IOException, SQLException, ClassNotFoundException {
         if (isPrintout) {
@@ -311,44 +311,7 @@ public class NhrConnection {
     }
 
     public void sendCommand() throws IOException {
-        /*
-         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-         Device IEEE Address Reporting Command  AT page.24
-         String[] cmd = {"41", "54", "2b", "09", "08", "53", "46", "d0", "d1", "c"};
-         Byte[] cmdBytes = new Byte[10];
-         String cmd = "0x41 0x54 0x2b 0x09 0x08 0x53 0x46 0xd0 0xd1 0x0c";
-         printWriter.print(cmd);
-                
-         byte[] cmd = hexStringToByteArray(in);
 
-         
-         String in = "41542b09085345d0d10c";
-         byte[] cmd = new byte[10];
-         cmd[0] = (byte) 0x41;
-         cmd[1] = (byte) 0x42;
-         cmd[2] = (byte) 0x2b;
-         cmd[3] = (byte) 0x09;
-         cmd[4] = (byte) 0x08;
-         cmd[5] = (byte) 0x53;
-         cmd[6] = (byte) 0x45;
-         cmd[7] = (byte) 0xd0;
-         cmd[8] = (byte) 0xd1;
-         cmd[9] = (byte) 0x0c;
-        
-
-         byte[] cmd = {
-         (byte) 0x41,
-         (byte) 0x42,
-         (byte) 0x2b,
-         (byte) 0x09,
-         (byte) 0x08,
-         (byte) 0x53,
-         (byte) 0x45,
-         (byte) 0xd0,
-         (byte) 0xd1,
-         (byte) 0x0c
-         };
-         */
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String request = scanner.next();
@@ -359,13 +322,17 @@ public class NhrConnection {
                     temp = "41 54 2B 18 12 00 12 4b 00 05 a7 bb b8 d0 b5 02 02 05 02 01 04 00 00 10 00 01 f3";
                     cmd = hexStringToByteArray(temp.replace(" ", ""));
                     break;
-                case "coordinator":
-                    temp = "41542b07 08 5241f0";
+                case "coordinatormac":
+                    temp = "41542b07 08 524146";
                     cmd = hexStringToByteArray(temp.replace(" ", ""));
                     break;
                 case "query":
                     temp = "41542b07 08 4446a6";
-                    cmd = hexStringToByteArray(temp.replace(" ",""));
+                    cmd = hexStringToByteArray(temp.replace(" ", ""));
+                    break;
+                case "coordinatorid":
+                    temp = "41542b0708524943";
+                    cmd = hexStringToByteArray(temp.replace(" ", ""));
                     break;
                 default:
                     cmd = hexStringToByteArray("");
@@ -417,13 +384,13 @@ public class NhrConnection {
             return this;
         }
 
-        public NhrConnection build() {
-            return new NhrConnection(this);
+        public NhrDataService build() {
+            return new NhrDataService(this);
         }
 
     }
 
-    private NhrConnection(NhrConnectionBuilder builder) {
+    private NhrDataService(NhrConnectionBuilder builder) {
         this.socket = builder.socket;
         this.inputBufferedReader = builder.inputBufferedReader;
         this.dataOutputStream = builder.dataOutputStream;

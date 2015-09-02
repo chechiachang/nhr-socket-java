@@ -5,7 +5,7 @@
  */
 package com.ccc.nhrsocket;
 
-import com.ccc.nhr.test1.NhrConnection;
+import com.ccc.nhr.test1.NhrDataService;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -31,7 +31,7 @@ public class NhrSocketSender {
 
         Socket socket = new Socket(host, portNumber);
 
-        final NhrConnection nhrConnection = new NhrConnection.NhrConnectionBuilder(socket)
+        final NhrDataService nhrConnection = new NhrDataService.NhrConnectionBuilder(socket)
                 .withInputBufferedReader(new BufferedReader(new InputStreamReader(socket.getInputStream())))
                 .withDataInputStream(new DataInputStream(socket.getInputStream()))
                 .withDataOutputStream(new DataOutputStream(socket.getOutputStream()))

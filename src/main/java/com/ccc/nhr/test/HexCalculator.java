@@ -21,6 +21,7 @@ public class HexCalculator {
         String input;
         input = scanner.nextLine().replace(",", "").replace(" ", "");
         int sum = 0;
+        sum += (41 + 54 + 43);
         for (int i = 0; i < (input.length() / 2); i++) {
             sum += Integer.parseInt(input.substring(2 * i, 2 * (i + 1)), 16);
         }
