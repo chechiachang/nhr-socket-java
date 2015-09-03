@@ -24,29 +24,34 @@ public class NhrCommandService {
     }
 
     public void sendCommand() throws IOException {
-
+        Command command = new Command();
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String request = scanner.next();
             String temp = "";
             switch (request) {
                 case "query"://DF query the device list under coordinator
-                    temp = "41 54 2b 07 08 44 46 a6";
+                    temp = command.go("DF");
                     break;
                 case "channel"://RC read coordinator operation channel
-                    temp = "41 54 2b 07 08 52 43 9b";
+                    temp = command.go("RC");
                     break;
                 case "operationid"://RI read coordinator operation pain id
-                    temp = "41 54 2b 07 08 52 49 95";
+                    temp = command.go("RI");
                     break;
                 case "extendid"://RE read coordinator extend id
-                    temp = "41 54 2b 07 08 52 45 99";
+                    temp = command.go("RE");
                     break;
                 case "mac"://RA read coordinator IEEE address
-                    temp = "41 54 2b 07 08 52 41 9d";
+                    temp = command.go("RA");
                     break;
                 case "sirenon":
-                    temp = "41 54 2B 18 12 00 12 4b 00 05 a7 bb b8 d0 b5 02 02 05 02 01 04 00 00 10 00 01 f3";
+                    String mac = "00 12 4b 00 05 a7 bb b8";
+                    String shortMac = "d0 b5";
+                    String clusterId = "05 02";
+                    String cmd = "00 10";
+                    String duration = "00 01";
+                    temp = command.go(mac, shortMac, clusterId, cmd, duration);
                     break;
                 default:
                     break;
